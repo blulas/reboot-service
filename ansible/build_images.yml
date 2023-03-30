@@ -1,0 +1,237 @@
+---
+- name: Build image for Spring Boot app
+  hosts: maven
+  gather_facts: yes
+  become: no
+  collections:
+    - containers.podman
+
+  pre_tasks:
+    - name: Include vars needed for build
+      include_vars: vars/build_vars.yml
+
+  tasks:
+    - block:
+        - name: Find mvn executable
+          find:
+            file_type: file
+            path: '/'
+            pattern: 'mvn'
+            recurse: yes
+          register: mvn_locations
+        
+        - name: Save the Maven conf directory
+          set_fact:
+            mvn_conf_directory: "{{ item.path | dirname | replace('/bin','/conf') }}"
+          when:
+            - mvn_locations is defined
+            - not item.path is directory
+            - not item.path is link
+            - not item.path is search("alternatives")
+          loop: "{{ mvn_locations.files }}"
+
+        - name: Go to rescue if mvn not found
+          fail:
+          when: mvn_locations.matched == 0
+      rescue:
+        - name: No Maven
+          fail:
+            msg: "Maven was not found and is required to build the container"
+    
+    - block:
+        - name: Check Maven version
+          shell: "mvn -version"
+          register: mvn_version
+
+        - name: Go to rescue if not Maven 3.8.1
+          fail:
+          when: mvn_version is not search("3.8.1")
+      rescue:
+        - debug:
+            var: mvn_version
+
+        - name: Wrong Maven version
+          fail:
+            msg: "Maven version 3.8.1 is required to build the container"
+
+    - block:
+        - name: Find Java JDK
+          find:
+            file_type: file
+            path: '/'
+            pattern: 'javac'
+            recurse: yes
+          register: java_locations
+        
+        - name: Go to rescue if JDK not found
+          fail:
+          when: java_locations.matched == 0
+      rescue:
+        - name: No Java JDK
+          fail:
+            msg: "Java JDK does not appear to be installed"
+
+    - block:
+        - name: Check JDK version
+          shell: "javac -version"
+          register: java_version
+
+        - name: Go to rescue if not JDK 1.8
+          fail:
+          when: java_version is not search("1.8.0")
+      rescue:
+        - debug:
+            var: java_version
+
+        - name: No Java JDK
+          fail:
+            msg: "Java JDK was not found or JDK version is not 1.8 which required to build the container"
+
+    - block:
+        - name: Find git
+          find:
+            file_type: file
+            path: '/'
+            pattern: 'git'
+            recurse: yes
+          register: git_locations
+        
+        - name: Go to rescue if git not found
+          fail:
+          when: git_locations.matched == 0
+      rescue:
+        - name: No git
+          fail:
+            msg: "The git executable was not found and is required to clone the repository"
+
+    - name: Create the {{ local_repo_dir }} directory if it doesn't exist
+      file:
+        path: "/home/{{ ansible_user }}/{{ local_repo_dir }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Clone the Git repository
+      git:
+        accept_hostkey: yes
+        clone: yes
+        dest: "/home/{{ ansible_user }}/{{ local_repo_dir }}"
+        key_file: "{{ ssh_private_key }}"
+        repo: "{{ remote_repo_url }}"
+        version: postgres
+
+    - name: Copy maven settings xml file to "{{ mvn_conf_directory }}"
+      copy:
+        dest: "{{ mvn_conf_directory }}/settings.xml"
+        src: "/home/{{ ansible_user }}/{{ local_repo_dir }}/config/settings.xml"
+        remote_src: yes
+
+    - block:
+        - name: Check if DB container present
+          podman_container_info:
+            name: ii-db
+          register: db_container_info
+
+        - name: Stop and remove the DB container if present
+          podman_container:
+            name: ii-db
+            state: absent
+          when:
+            - db_container_info is defined
+            - db_container_info.containers | length > 0
+            - item.Name == "ii-db"
+          loop: "{{ db_container_info.containers }}"
+
+        - name: Get DB image info
+          podman_image_info:
+            name: quay.io/redhattelco/intelli-infra-db:latest
+          register: db_image_info
+
+        - name: Remove the DB image if present
+          podman_image:
+            name: quay.io/redhattelco/intelli-infra-db
+            state: absent
+          when:
+            - db_image_info is defined
+            - db_image_info.images | length > 0
+            - "'quay.io/redhattelco/intelli-infra-db:latest' in item.RepoTags"
+          loop: "{{ db_image_info.images }}"
+
+        - name: Check if Springboot container present
+          podman_container_info:
+            name: ii-dm
+          register: dm_container_info
+        
+        - name: Stop and remove the Springboot container if present
+          podman_container:
+            name: ii-dm
+            state: absent
+          when:
+            - dm_container_info is defined
+            - dm_container_info.containers | length > 0
+            - item.Name == "ii-dm"
+          loop: "{{ dm_container_info.containers }}"
+        
+        - name: Get Springboot image info
+          podman_image_info:
+            name: quay.io/redhattelco/intelli-infra-full:latest
+          register: dm_image_info
+
+        - name: Remove the Springboot image if present
+          podman_image:
+            name: quay.io/redhattelco/intelli-infra-full
+            state: absent
+          when:
+            - db_image_info is defined
+            - db_image_info.images | length > 0
+            - "'quay.io/redhattelco/intelli-infra-full:latest' in item.RepoTags"
+          loop: "{{ dm_image_info.images }}"
+      become: yes
+
+    - name: Run Maven clean
+      shell:
+      args:
+        chdir: "/home/{{ ansible_user }}/{{ local_repo_dir }}"
+        cmd: "mvn clean install"
+        
+    - block:
+        - name: Login to quay.io
+          podman_login:
+            registry: quay.io
+            password: "{{ quay_password }}"
+            username: "{{ quay_username }}"
+
+        - name: Podman build the DM image
+          podman_image:
+            build:
+              format: docker
+              extra_args: "-f ./src/main/docker/springboot/Dockerfile"
+            path: "/home/{{ ansible_user }}/{{ local_repo_dir }}"
+            name: "quay.io/redhattelco/intelli-infra-full"
+            tag:  "latest"
+            pull: no
+            push: no
+            state: "build"
+            validate_certs: no
+          register: dm_build_results
+        
+        - name: Podman build the DB image
+          podman_image:
+            build:
+              format: docker
+              extra_args: "-f ./src/main/docker/postgresql/Dockerfile"
+            path: "/home/{{ ansible_user }}/{{ local_repo_dir }}"
+            name: "quay.io/redhattelco/intelli-infra-db"
+            tag:  "latest"
+            pull: no
+            push: no
+            state: "build"
+            validate_certs: no
+          register: db_build_results
+
+        - name: Logout of quay.io
+          podman_logout:
+            registry: quay.io
+      become: yes
+...

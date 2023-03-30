@@ -1,0 +1,69 @@
+---
+- block:
+    - name: Add user to database for replication
+      postgresql_user:
+        login_host: "{{ primary_pg_host }}"
+        login_user: "{{ postgresql_user }}"
+        login_password: "{{ postgresql_password }}"
+        db: "iim"
+        name: "{{ repl_user }}"
+        password: "{{ repl_user_password }}"
+        role_attr_flags: "REPLICATION"
+
+    - name: Create replication slot
+      postgresql_query:
+        login_host: "{{ primary_pg_host }}"
+        login_user: "{{ postgresql_user }}"
+        login_password: "{{ postgresql_password }}"
+        query: SELECT * FROM pg_create_physical_replication_slot('replication_slot_slave1')
+      ignore_errors: yes
+
+    - name: Backup primary db host
+      command: "podman exec -it -u {{ postgresql_user }} ii-db pg_basebackup -D /var/lib/postgresql/data/backup"
+
+    - name: Stop ii-db container
+      podman_container:
+        name: ii-db
+        state: stopped
+
+    - name: Update postgres.conf
+      copy:
+        src: "files/postgresql_primary.conf"
+        dest: "{{ mount_path }}/postgresql.conf"    
+
+    - name: Update pg_hba.conf
+      template:
+        src: "templates/pg_hba_primary.conf.j2"
+        dest: "{{ mount_path }}/pg_hba.conf"
+
+    - name: Grant user permissions to "{{ mount_path }}"
+      file:
+        path: "{{ mount_path }}"
+        state: directory
+        group: "{{ ansible_user }}"
+        mode: u+rwx,g+rwx
+
+    - name: Grant user permissions to "{{ mount_path }}/backup"
+      file:
+        group: "{{ ansible_user }}"
+        path: "{{ mount_path }}/backup"
+        owner: "{{ ansible_user }}"
+        recurse: yes
+        state: directory
+        mode: u+rwx,g+rwx
+    
+    - name: Archive the postgres backup
+      archive:
+        path: "{{ mount_path }}/backup/"
+        dest: "/tmp/postgres_backup.tar.gz"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0775
+
+    - name: Get backup from primary db host
+      fetch:
+        dest: "/tmp"
+        src: "/tmp/postgres_backup.tar.gz"
+
+  when: inventory_hostname in groups['pgsql_primary'][0]
+...

@@ -1,0 +1,23 @@
+---
+- name: Update reboot rules
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  pre_tasks:
+    - name: Include vars from file
+      include_vars: vars/ha_vars.yml
+
+  tasks:
+    - name: Get reboot rule
+      uri:
+        url: "http://{{ podman_host }}:8080/service/host/config/reboot"
+        method: GET
+        body_format: json
+        headers:
+          Accept: "application/json"
+        return_content: yes
+      register: api_results
+    
+    - debug:
+        var: api_results
+...

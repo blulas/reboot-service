@@ -1,0 +1,106 @@
+---
+- name: Start the Decision Manager containers
+  hosts: podman
+  gather_facts: yes
+  become: yes
+  collections:
+    - containers.podman
+
+  pre_tasks:
+    - name: Include vars needed
+      include_vars:  vars/ha_vars.yml
+
+  tasks:
+    - name: Allow firewall port for PostgreSQL
+      firewalld:
+        port: "{{ postgresql_port | int  }}/tcp"
+        state: enabled
+        zone: public
+        permanent: yes
+
+    - name: Allow firewall port for Springboot
+      firewalld:
+        port: "{{ springboot_port | int  }}/tcp"
+        state: enabled
+        zone: public
+        permanent: yes
+
+    - name: Install pre-requisites if not already installed
+      dnf:
+        name:
+          - podman
+          - postgresql-devel
+          - gcc
+          - python3-devel
+          - rsync
+        state: latest
+
+    - name: Install psycopg2 Python module
+      pip:
+        name: psycopg2
+        # extra_vars: "--trusted-host="
+    
+    - name: Create directory for container volume
+      file:
+        path: "{{ mount_path }}"
+        state: directory
+        recurse: yes
+        mode: 0755
+
+    - name: Pull and Start the DB container
+      podman_container:
+        name: ii-db
+        image: quay.io/redhattelco/intelli-infra-db:latest
+        detach: yes
+        volume:
+          - "{{ mount_path }}:/var/lib/postgresql/data:Z"
+        publish:
+          - "{{ postgresql_port | int  }}:{{ postgresql_port | int  }}"
+        state: started
+        restart: yes
+        env:
+          POSTGRES_USER: "{{ postgresql_user }}"
+          POSTGRES_PASSWORD: "{{ postgresql_password }}"
+
+    - name: Pull and Start the Springboot container
+      podman_container:
+        name: ii-dm
+        image: quay.io/redhattelco/intelli-infra-full
+        detach: yes
+        publish:
+          - "{{ springboot_port | int  }}:8080"
+        state: started
+        restart: yes
+        env:
+          DB_HOST: "{{ lb_vip_hostname }}"
+          DB_PORT: "{{ postgresql_port | int }}"
+        
+    - set_fact:
+        primary_host_ip: "{{ groups['pgsql_primary'] | map('extract', hostvars,['ansible_default_ipv4','address']) | join(',')  }}"
+
+    - set_fact:
+        standby_host_ip: "{{ groups['pgsql_standby'] | map('extract', hostvars,['ansible_default_ipv4','address']) | join(',')  }}"
+
+    - name: Configure Primary DB
+      include_tasks: tasks/configure_dm_primary_db.yml
+
+    - name: Ensure ii-db container is stopped on all podman hosts
+      podman_container:
+        name: ii-db
+        state: stopped
+
+    - name: Configure standby db nodes
+      include_tasks: tasks/configure_dm_standby_db.yml
+
+    - name: Restart the DB container if stopped
+      podman_container:
+        name: ii-db
+        state: started
+        restart: yes
+
+    - name: Start the Springboot container if stopped
+      podman_container:
+        name: ii-dm
+        state: started
+        restart: no
+...

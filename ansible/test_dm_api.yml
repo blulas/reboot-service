@@ -1,0 +1,22 @@
+---
+- name: Check Decision Manager if OK to reboot appliance
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    
+  pre_tasks:
+    - name: Include vars from file
+      include_vars: vars/ha_vars.yml
+
+  tasks:
+    - name: Make the API call
+      uri:
+        url: "http://{{ podman_host }}:8080/service/host/reboot"
+        method: POST
+        body_format: json
+        body: "{{ api_body_file }}"
+      register: return_data
+
+    - debug:
+        var: return_data

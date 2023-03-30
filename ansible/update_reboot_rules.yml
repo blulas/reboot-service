@@ -1,0 +1,21 @@
+---
+- name: Update reboot rules
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  pre_tasks:
+    - name: Include vars from file
+      include_vars: vars/ha_vars.yml
+
+  tasks:
+    - name: Update rule
+      uri:
+        url: "http://{{ podman_host }}:8080/service/host/updateConfig"
+        method: POST
+        body_format: json
+        body: "{{ lookup('template','templates/update_reboot_api_body.j2') }}"
+        headers:
+          Accept: "application/json"
+        return_content: yes
+...

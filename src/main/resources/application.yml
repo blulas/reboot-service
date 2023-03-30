@@ -1,0 +1,16 @@
+spring:
+  main:
+    banner-mode: "off"
+  application:
+    name:  Infrastructure Management Reboot Service
+  datasource:
+    platform: postgresql
+    initialization-mode: always
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/iim
+    username: iimuser
+    password: Iimuser@123
+
+server:
+  port: 8080
+  servlet:
+    contextPath: /service/host

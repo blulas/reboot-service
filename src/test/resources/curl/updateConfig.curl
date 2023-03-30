@@ -1,0 +1,11 @@
+curl --location --request POST 'http://localhost:8181/service/host/updateConfig' \
+--header 'Accept: application/json' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "Name": "reboot",
+    "Template": "/RebootRequired.drt",
+    "TemplateData": [ 
+        { "name": "templateMinutes", "value": "2"},
+        { "name": "templateCount", "value": "4"}
+    ]        
+}'

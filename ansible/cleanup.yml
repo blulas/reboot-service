@@ -1,0 +1,71 @@
+---
+- name: Cleanup containers and images before retesting
+  hosts: podman 
+  gather_facts: yes
+  become: yes
+  collections:
+    - containers.podman
+
+  pre_tasks:
+    - name: Include vars from file
+      include_vars: vars/ha_vars.yml
+
+  tasks:
+    - name: Remove the Spring Boot container
+      podman_container:
+        name: ii-dm
+        state: absent
+        restart: yes
+    
+    - name: Remove the DB container
+      podman_container:
+        name: ii-db
+        state: absent
+        restart: yes
+
+    - name: Get Springboot image info
+      podman_image_info:
+        name: quay.io/redhattelco/intelli-infra-full:latest
+      register: dm_image_info
+
+    - name: Remove the Springboot image if present
+      podman_image:
+        name: quay.io/redhattelco/intelli-infra-full
+        state: absent
+      when:
+        - db_image_info is defined
+        - db_image_info.images | length > 0
+        - "'quay.io/redhattelco/intelli-infra-full:latest' in item.RepoTags"
+      loop: "{{ dm_image_info.images }}"
+
+    - name: Get DB image info
+      podman_image_info:
+        name: quay.io/redhattelco/intelli-infra-db:latest
+      register: db_image_info
+
+    - name: Remove the DB image if present
+      podman_image:
+        name: quay.io/redhattelco/intelli-infra-db
+        state: absent
+      when:
+        - db_image_info is defined
+        - db_image_info.images | length > 0
+        - "'quay.io/redhattelco/intelli-infra-db:latest' in item.RepoTags"
+      loop: "{{ db_image_info.images }}"
+
+    - name: Delete directory for container volume
+      file:
+        path: "{{ mount_path }}"
+        state: absent
+
+    - name: Delete gzip from /tmp
+      file:
+        path: "/tmp/postgres_backup.tar.gz"
+        state: absent
+    
+    - name: Delete gzip from control node
+      file:
+        path: "/tmp/{{ groups['pgsql_primary'][0] }}"
+        state: absent
+      delegate_to: localhost
+...

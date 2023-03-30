@@ -1,0 +1,7 @@
+---
+ssh_private_key: "~/.ssh/gitlab_id_rsa"
+quay_username: "treveal"
+quay_password: "lFl6bQag4vOXL0IS6p+WX1a6x5HlvxE4HiuYfgVG8hltagkem7dAqRJrPU0YXYPKcOacemNaEgHzkz1sWm987ko540JtRe1/m2ZAYmc4zks="
+local_repo_dir: "iidm"
+remote_repo_url: "ssh://git@gitlab.consulting.redhat.com:2222/intelligent-application-practice/customers/att/infrastructure-management/reboot-service.git"
+...

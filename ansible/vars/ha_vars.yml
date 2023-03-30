@@ -1,0 +1,17 @@
+---
+podman_host: "{{ groups['pgsql_primary'][0] }}"
+primary_pg_host: "{{ groups['pgsql_primary'][0] }}"
+postgresql_user: "postgres"
+postgresql_password: "Dominate64"
+postgresql_port: 5432
+springboot_port: 8080
+repl_user: "pgrepl_user"
+repl_user_password: "Dominate64"
+mount_path: "/var/podman/mnt/pgsql"     # DO NOT include trailing slash
+lb_vip_hostname: "{{ groups['pgsql_primary'][0] }}"
+failover_trigger_filename: "/var/lib/postgresql/data/failover" # Path inside container.  Only change the filename (failover) of path
+reboot_minutes: 60
+reboot_count: 2
+api_body_file: "{{ lookup('file', 'json/api_body_twentyfive.json') }}"
+# api_body_file: "{{ lookup('file', 'json/api_body_singlehost.json') }}" 
+...

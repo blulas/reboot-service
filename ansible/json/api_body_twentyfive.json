@@ -1,0 +1,79 @@
+{
+    "hosts": [
+        {
+        "host": "isam100.somedomain.com"
+        },
+        {
+        "host": "isam101.somedomain.com"
+        },
+        {
+        "host": "isam102.somedomain.com"
+        },
+        {
+        "host": "isam103.somedomain.com"
+        },
+        {
+        "host": "isam104.somedomain.com"
+        },
+        {
+        "host": "isam105.somedomain.com"
+        },
+        {
+        "host": "isam106.somedomain.com"
+        },
+        {
+        "host": "isam107.somedomain.com"
+        },
+        {
+        "host": "isam108.somedomain.com"
+        },
+        {
+        "host": "isam109.somedomain.com"
+        },
+        {
+        "host": "isam110.somedomain.com"
+        },
+        {
+        "host": "isam111.somedomain.com"
+        },
+        {
+        "host": "isam112.somedomain.com"
+        },
+        {
+        "host": "isam113.somedomain.com"
+        },
+        {
+        "host": "isam114.somedomain.com"
+        },
+        {
+        "host": "isam115.somedomain.com"
+        },
+        {
+        "host": "isam116.somedomain.com"
+        },
+        {
+        "host": "isam118.somedomain.com"
+        },
+        {
+        "host": "isam119.somedomain.com"
+        },
+        {
+        "host": "isam120.somedomain.com"
+        },
+        {
+        "host": "isam121.somedomain.com"
+        },
+        {
+        "host": "isam122.somedomain.com"
+        },
+        {
+        "host": "isam123.somedomain.com"
+        },
+        {
+        "host": "isam124.somedomain.com"
+        },
+        {
+        "host": "isam125.somedomain.com"
+        }
+    ]
+}

@@ -1,0 +1,68 @@
+---
+- name: Start the Decision Manager containers
+  hosts: podman
+  gather_facts: yes
+  become: yes
+  collections:
+    - containers.podman
+
+  pre_tasks:
+    - name: Include vars from file
+      include_vars: vars/standalone_vars.yml
+
+  tasks:
+    - name: Allow firewall port for PostgreSQL
+      firewalld:
+        port: "{{ postgresql_port | int  }}/tcp"
+        state: enabled
+        zone: public
+        permanent: yes
+
+    - name: Allow firewall port for Springboot
+      firewalld:
+        port: "{{ springboot_port | int  }}/tcp"
+        state: enabled
+        zone: public
+        permanent: yes
+
+    - name: Install pre-requisites if not already installed
+      dnf:
+        name:
+          - podman
+        state: latest
+    
+    - name: Create directory for container volume
+      file:
+        path: "{{ mount_path }}"
+        state: directory
+        recurse: yes
+        mode: 0755
+
+    - name: Pull and Start the DB container
+      podman_container:
+        name: ii-db
+        image: quay.io/redhattelco/intelli-infra-db:latest
+        detach: yes
+        volume:
+          - "{{ mount_path }}:/var/lib/postgresql/data:Z"
+        publish:
+          - "{{ postgresql_port | int  }}:{{ postgresql_port | int  }}"
+        state: started
+        restart: yes
+        env:
+          POSTGRES_USER: "{{ postgresql_user }}"
+          POSTGRES_PASSWORD: "{{ postgresql_password }}"
+
+    - name: Pull and Start the Springboot container
+      podman_container:
+        name: ii-dm
+        image: quay.io/redhattelco/intelli-infra-full
+        detach: yes
+        publish:
+          - "{{ springboot_port | int  }}:{{ springboot_port | int  }}"
+        state: started
+        restart: yes
+        env:
+          DB_HOST: "{{ inventory_hostname }}"
+          DB_PORT: "{{ postgresql_port | int }}"
+...

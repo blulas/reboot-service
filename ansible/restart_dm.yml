@@ -1,0 +1,39 @@
+---
+- name: Start the Decision Manager containers
+  hosts: podman
+  gather_facts: no
+  collections:
+    - containers.podman
+  tasks:
+    - block:
+        - name: DB container present
+          podman_container_info:
+            name: ii-db
+          register: db_container_info
+        
+        - name: Springboot container present
+          podman_container_info:
+            name: ii-dm
+          register: dm_container_info
+
+        - name: Restart the DB container if stopped
+          podman_container:
+            name: ii-db
+            state: started
+            restart: no
+          when:
+            - item.Name == "ii-db"
+            - not item.State.Running
+          loop:  "{{ db_container_info.containers }}"
+
+        - name: Start the Springboot container if stopped
+          podman_container:
+            name: ii-dm
+            state: started
+            restart: no
+          when:
+            - item.Name == "ii-dm"
+            - not item.State.Running
+          loop:  "{{ dm_container_info.containers }}"
+      become: yes
+...

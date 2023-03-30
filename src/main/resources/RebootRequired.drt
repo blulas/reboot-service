@@ -1,0 +1,38 @@
+template header
+   templateMinutes
+   templateCount
+   
+import com.att.infrastructure.model.Reboot;
+
+template "reboot-required"
+
+rule "Reboot Required 1"
+	dialect "mvel"
+	when
+		reboot : Reboot(restartedMin <= (@{templateMinutes}) , restartCount <= (@{templateCount}))
+	then
+		reboot.setRestart( "Yes" );
+		reboot.setAlertOps( "No" );
+end
+
+
+rule "Reboot Required 2"
+	dialect "mvel"
+	when
+		reboot : Reboot(restartedMin <= (@{templateMinutes}), restartCount > (@{templateCount}))
+	then
+		reboot.setRestart( "No" );
+		reboot.setAlertOps( "Yes" );
+end
+
+rule "Reboot Required 3"
+	dialect "mvel"
+	when
+		reboot : Reboot( restartedMin > (@{templateMinutes}) )
+	then
+		reboot.setRestart( "Yes" );
+		reboot.setAlertOps( "No" );
+		reboot.setRestartCount(1);
+end
+
+end template

@@ -1,0 +1,49 @@
+# Add a host or hosts under the [podman] section by either hostname or IP address
+#
+# Make sure you update the ansible_user var under [podman:vars] with a user
+# that has permissions to connect to the host(s) defined under [podman] via SSH
+#
+# Also update the ansible_ssh_private_key under [podman:vars] to provide a path
+# to an SSH private key the ansible_user can use to login to the hosts specified
+# under [podman]
+
+[maven]
+trrdocker.texasroadracing.com  # now running podman
+
+[pgsql_primary]
+trrpodman.texasroadracing.com
+
+[pgsql_standby]
+trrpodrepl.texasroadracing.com
+
+[podman:children]
+pgsql_primary
+pgsql_standby
+
+[postgresql:children]
+pgsql_primary
+pgsql_standby
+
+[maven:vars]
+ansible_connection=ssh
+ansible_port=22
+ansible_user=tony
+ansible_ssh_private_key_file=~/.ssh/ansible_rsa
+
+[podman:vars]
+ansible_connection=ssh
+ansible_port=22
+ansible_user=tony
+ansible_ssh_private_key_file=~/.ssh/ansible_rsa
+
+[pgsql_primary:vars]
+ansible_connection=ssh
+ansible_port=22
+ansible_user=tony
+ansible_ssh_private_key_file=~/.ssh/ansible_rsa
+
+[pgsql_standby:vars]
+ansible_connection=ssh
+ansible_port=22
+ansible_user=tony
+ansible_ssh_private_key_file=~/.ssh/ansible_rsa

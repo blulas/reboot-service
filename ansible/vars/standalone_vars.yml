@@ -1,0 +1,9 @@
+---
+podman_host: "{{ inventory_hostname }}"
+primary_pg_host: "{{ inventory_hostname }}"
+postgresql_user: "postgres"
+postgresql_password: "Dominate64"
+postgresql_port: 5432
+springboot_port: 8080
+mount_path: "/var/podman/mnt/pgsql"     # DO NOT include trailing slash
+...

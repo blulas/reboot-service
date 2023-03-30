@@ -1,0 +1,67 @@
+---
+- block:
+    - name: Grant user permissions to "{{ mount_path }}"
+      file:
+        group: "{{ ansible_user }}"
+        mode: u+rwx,g+rwx
+        path: "{{ mount_path }}"
+        recurse: yes
+        state: directory
+
+    - name: Get list of child directories in PGSQL directory
+      find:
+        paths: "{{ mount_path }}/"
+        hidden: yes
+        recurse: no
+        file_type: directory
+      register: pgsql_data_dirs
+
+    - name: Delete found directories
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ pgsql_data_dirs.files }}"
+
+    - name: Get list of files in PGSQL data directory
+      find:
+        paths: "{{ mount_path }}/"
+        hidden: yes
+        recurse: yes
+      register: pgsql_data_files
+
+    - name: Delete found files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ pgsql_data_files.files }}"
+
+    - name: Copy backup to standby db host
+      copy:
+        dest: "/tmp/"
+        src: "/tmp/{{ groups['pgsql_primary'][0] }}/tmp/postgres_backup.tar.gz"
+        mode: 0775
+
+    - name: Extract the backup to {{ mount_path }}
+      unarchive:
+        dest: "{{ mount_path }}"
+        src: "/tmp/postgres_backup.tar.gz"
+        remote_src: yes
+
+    - name: Replace postgresql.conf on standby server
+      copy:
+        src: files/postgresql_standby.conf
+        dest: "{{ mount_path }}/postgresql.conf"
+
+    - name: Replace pg_hba.conf on standby server
+      template:
+        src: templates/pg_hba_standby.conf.j2
+        dest: "{{ mount_path }}/pg_hba.conf"
+        
+    - name: Copy recovery.conf to standby server
+      template:
+        src: templates/recovery.conf.j2
+        dest: "{{ mount_path }}/recovery.conf"
+        mode: u+rw
+
+  when: inventory_hostname in groups['pgsql_standby']
+...

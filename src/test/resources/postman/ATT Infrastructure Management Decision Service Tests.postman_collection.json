@@ -1,0 +1,309 @@
+{
+	"info": {
+		"_postman_id": "4c76a374-49c6-473b-bbc2-d9a15467e01c",
+		"name": "ATT Infrastructure Management Decision Service Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Ansible Interface",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"hosts\": [\n        {\n            \"host\": \"isam.texasroadracing.com\"\n        },\n        {\n            \"host\": \"isam.texasfbi.com\"\n        }\n    ]    \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8181/service/host/reboot",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"service",
+						"host",
+						"reboot"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "config",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8181/service/host/config/reboot",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"service",
+						"host",
+						"config",
+						"reboot"
+					]
+				},
+				"description": "This method updates the rule template parameters, which are stored in the database and retrieved each time the rules are generated/executed.\n\nThis method can be called from an external source in oder to simply update the database and therefore subsequent calls to the rules."
+			},
+			"response": []
+		},
+		{
+			"name": "summary",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8181/service/host/summary",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"service",
+						"host",
+						"summary"
+					]
+				},
+				"description": "This method updates the rule template parameters, which are stored in the database and retrieved each time the rules are generated/executed.\n\nThis method can be called from an external source in oder to simply update the database and therefore subsequent calls to the rules."
+			},
+			"response": []
+		},
+		{
+			"name": "details",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8181/service/host/details/isam.texasroadracing.com",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"service",
+						"host",
+						"details",
+						"isam.texasroadracing.com"
+					]
+				},
+				"description": "This method updates the rule template parameters, which are stored in the database and retrieved each time the rules are generated/executed.\n\nThis method can be called from an external source in oder to simply update the database and therefore subsequent calls to the rules."
+			},
+			"response": []
+		},
+		{
+			"name": "update-config",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Name\": \"reboot\",\n    \"TemplateData\": [ \n        { \"name\": \"templateMinutes\", \"value\": \"5\"},\n        { \"name\": \"templateCount\", \"value\": \"2\"}\n    ]        \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8181/service/host/updateConfig",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"service",
+						"host",
+						"updateConfig"
+					]
+				},
+				"description": "This method updates the rule template parameters, which are stored in the database and retrieved each time the rules are generated/executed.\n\nThis method can be called from an external source in oder to simply update the database and therefore subsequent calls to the rules."
+			},
+			"response": []
+		},
+		{
+			"name": "determineRebootRequirements (Scenario #1)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"RuleTemplate\": {\n        \"Name\": \"reboot\",\n        \"Template\": \"/RebootRequired.drt\",\n        \"TemplateData\": [ \n            { \"name\": \"templateMinutes\", \"value\": \"1\"},\n            { \"name\": \"templateCount\", \"value\": \"2\"}\n        ]        \n    },\n    \n    \"RebootRequest\": {\n        \"host\": \"isam.texasroadracing.com\",\n        \"restartCount\": 2,\n        \"restartedMin\": 0\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8181/service/host/determineRebootRequirements/false",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"service",
+						"host",
+						"determineRebootRequirements",
+						"false"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "passw0rd$",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "pamAdmin",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
