@@ -24,8 +24,9 @@
 		<!-- Common Maven Plugins -->
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 
-        <!--IBM Business Automation -->
-		<bamoe.bom.version>8.0.2</bamoe.bom.version>
+        <!-- IBM Decision Manager Open Edition -->
+		<!-- This will be replaced in version 9.x, as all Maven dependencies will be published to Maven Central vs Red Hat's public Maven repository -->
+		<bamoe.bom.version>8.0.2.redhat-00001</bamoe.bom.version>
 
 		<!-- Testing Properties -->
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
@@ -49,8 +50,8 @@
 		<dependencies>
             <!-- IBM Business Automation Manager Open Editions -->
             <dependency>
-                <groupId>com.ibm.bamoe</groupId>
-                <artifactId>dmoe-now-bom</artifactId>
+                <groupId>com.redhat.ba</groupId>
+                <artifactId>ba-bom</artifactId>
                 <version>${bamoe.bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -71,7 +72,7 @@
 	</dependencyManagement>
 
 	<dependencies>
-		<!-- Red Hat Business Automation Dependencies -->
+		<!-- IBM Decision Manager Open Edition Dependencies -->
 		<dependency>
 			<groupId>org.kie</groupId>
 			<artifactId>kie-api</artifactId>
