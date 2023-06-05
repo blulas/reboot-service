@@ -26,6 +26,7 @@
 
         <!-- IBM Decision Manager Open Edition -->
 		<!-- This will be replaced in version 9.x, as all Maven dependencies will be published to Maven Central vs Red Hat's public Maven repository -->
+		<!-- Maven Depenency Mapping:  https://www.ibm.com/support/pages/node/6999339 -->
 		<bamoe.bom.version>8.0.3.redhat-00002</bamoe.bom.version>
 
 		<!-- Testing Properties -->
