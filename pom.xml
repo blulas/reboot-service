@@ -26,7 +26,7 @@
 
         <!-- IBM Decision Manager Open Edition -->
 		<!-- This will be replaced in version 9.x, as all Maven dependencies will be published to Maven Central vs Red Hat's public Maven repository -->
-		<bamoe.bom.version>8.0.2.redhat-00001</bamoe.bom.version>
+		<bamoe.bom.version>8.0.3.redhat-00002</bamoe.bom.version>
 
 		<!-- Testing Properties -->
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
@@ -51,7 +51,7 @@
             <!-- IBM Business Automation Manager Open Editions -->
             <dependency>
                 <groupId>com.redhat.ba</groupId>
-                <artifactId>ba-bom</artifactId>
+                <artifactId>ba-platform-bom</artifactId>
                 <version>${bamoe.bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
